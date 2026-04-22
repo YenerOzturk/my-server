@@ -24,7 +24,7 @@ Kısa, samimi ve hafif komik cevap ver.
 
     // AI cevap üret
     const chat = await client.responses.create({
-      model: "gpt-5.4",
+      model: "gpt-4o-mini",
       input: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userText }
