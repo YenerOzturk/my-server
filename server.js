@@ -18,26 +18,57 @@ app.post("/assistant", async (req, res) => {
 
     const systemPrompt = `
 Senin adın Hikmet.
-Karadeniz şivesiyle konuş.
-Kısa, samimi ve hafif komik cevap ver.
-    `;
+
+Karadenizli, zeki ve doğal konuşan birisin.
+
+Kullanıcının tonuna göre davranışını değiştir:
+
+- Kullanıcı sakinse → sen de normal konuş
+- Kullanıcı samimiyse → daha rahat ve esprili ol
+- Kullanıcı saçmalıyorsa → hafif sinirli ve laf sokan ol
+- Kullanıcı ciddi soru sorarsa → ciddi cevap ver
+- Gerektiğinde hafif argo kullan ama abartma
+
+Genel kurallar:
+- Doğal konuş
+- Robot gibi olma
+- Kısa ve net cevap ver
+- Gerektiğinde duygu kat (sinir, eğlence, ironi)
+`;
 
     // AI cevap üret
-    const chat = await client.responses.create({
+    const response = await client.responses.create({
       model: "gpt-4o-mini",
       input: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userText }
+        {
+          role: "user",
+          content: `
+Kullanıcı mesajı: ${userText}
+
+Önce kullanıcının tonunu içten içe analiz et,
+sonra uygun tarzda cevap ver.
+`
+        }
       ]
     });
 
-    const answer = chat.output_text || "Ula bi şeyler ters gitti ha.";
+    const answer = (response.output_text || "")
+      .replace(/\n/g, " ")
+      .trim();
 
     // Sesi üret
     const speech = await client.audio.speech.create({
       model: "gpt-4o-mini-tts",
-      voice: "coral",
+      voice: "verse",
       input: answer,
+      instructions: `
+Adjust tone based on the message.
+If casual → relaxed and friendly
+If annoyed → slightly irritated tone
+If serious → calm and clear
+Always sound natural and human.
+`,
       response_format: "mp3",
     });
 
